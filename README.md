@@ -1,181 +1,134 @@
 # Obsidian Clip
 
-One-command web clipping to Obsidian using natural language.
+使用自然语言一键将网页剪藏到 Obsidian。
 
-## Prerequisites
+## 前置要求
 
-### Required
+### 必需
 
-| Software | Notes |
+| 软件 | 说明 |
 |----------|-------|
-| **Obsidian** | Local note-taking app, any recent version |
-| **Google Chrome** | Chrome only — Safari/Firefox not supported |
-| **Obsidian Web Clipper** (Chrome Extension) | [Install from Chrome Web Store](https://chrome.google.com/webstore/detail/obsidian-web-clipper/ofdgopchbanhlkickijgiamfgkxinbbm) |
+| **Obsidian** | 本地笔记应用，任意版本均可 |
+| **Google Chrome** | 仅支持 Chrome — Safari/Firefox 不支持 |
+| **Obsidian Web Clipper**（Chrome 扩展） | [从 Chrome 应用商店安装](https://chrome.google.com/webstore/detail/obsidian-web-clipper/ofdgopchbanhlkickijgiamfgkxinbbm) |
 
-### Recommended
+### 推荐
 
-| Plugin | Notes |
+| 插件 | 说明 |
 |--------|-------|
-| **Local Images Plus** (Obsidian community plugin) | Auto-downloads remote images locally, prevents link rot |
+| **Local Images Plus**（Obsidian 社区插件） | 自动将远程图片下载到本地，防止链接失效 |
 
 ---
 
-## Install the Skill in OpenClaw
+## 在 OpenClaw 中安装 Skill
 
-### Via npx (Recommended)
+### 通过聊天（ Telegram、微信等）
 
-```bash
-npx --yes skills add your-username/your-repo
-```
-
-### Verify the skill is loaded:
-
-```bash
-openclaw status
-# or
-openclaw skills list
-```
-
----
-
-## Configure the Dependencies
-
-### Step 1 — Install Obsidian Web Clipper Extension
-
-1. Open Chrome and visit the [Chrome Web Store page](https://chrome.google.com/webstore/detail/obsidian-web-clipper/ofdgopchbanhlkickijgiamfgkxinbbm)
-2. Click "Add to Chrome"
-3. Look for the orange book icon 📕 in the Chrome toolbar
-
-### Step 2 — Set the Clip Shortcut
-
-1. Click the extension icon → click the ⚙️ settings icon (top right)
-2. Find **Keyboard shortcut** settings
-3. Bind the shortcut to **⌥⇧O** (Option + Shift + O)
-   - This triggers "Save to Obsidian", not the generic clip action
-
-### Step 3 — Authorize Obsidian to Receive Clips
-
-1. On first clip, the extension will prompt for vault authorization
-2. Select your Obsidian vault
-3. Confirm saving to the **Clippings** folder (or your preferred default)
-
-### Step 4 (Optional) — Install Local Images Plus
-
-1. Open Obsidian → Settings → Community Plugins
-2. Search "Local Images Plus"
-3. Install and enable
-4. Remote images in clipped notes will auto-download to `Clippings/attachments/`
-
----
-
-## Usage
-
-### Trigger Phrases
-
-The skill activates when a message contains a URL **plus** one of these trigger words:
+只需向你的 OpenClaw 机器人发送自然语言消息：
 
 ```
-保存这个网页 → saves https://example.com
-保存到 Obsidian → saves https://example.com
-clip this page → saves https://example.com
-收藏到 Obsidian → saves https://example.com
-clip this article → saves https://example.com
-save to Obsidian → saves https://example.com
+Install the obsidian-clip-skill skill from https://github.com/imhaiqiao/obsidian-clip-skill
 ```
 
-**How it works:** OpenClaw matches your message against the `description` field in `SKILL.md` and automatically invokes this skill.
-
-### Common Use Cases
-
-- WeChat public accounts (微信公众号)
-- Long-form articles (知乎, 少数派, Medium, etc.)
-- Tech blogs and documentation
-- Any webpage
-
----
-
-## How It Works
+### 安装后，重启网关：
 
 ```
-User sends URL + trigger phrase
-        ↓
-  OpenClaw identifies skill
-        ↓
-  Open target page (Chrome, profile=openclaw)
-        ↓
-  Wait for page to fully load
-        ↓
-  Auto-scroll page (triggers lazy-loaded images)
-        ↓
-  Bring Chrome to foreground
-        ↓
-  Press ⌥⇧O shortcut
-        ↓
-  Obsidian Web Clipper saves Markdown to vault
-        ↓
-  Return confirmation to user
+openclaw gateway restart
 ```
 
 ---
 
-## Saved File Location
+## 配置依赖
 
-Clipped notes go to the `Clippings/` folder in your vault:
+### 第一步 — 安装 Obsidian Web Clipper 扩展
+
+1. 打开 Chrome，访问 [Chrome 应用商店页面](https://chrome.google.com/webstore/detail/obsidian-web-clipper/ofdgopchbanhlkickijgiamfgkxinbbm)
+2. 点击"添加到 Chrome"
+
+### 第二步 — 设置剪藏快捷键
+
+1. 点击扩展图标 → 点击右上角 ⚙️ 设置图标
+2. 找到**键盘快捷键**设置
+3. 将快捷键绑定到 **⌥⇧O**（Option + Shift + O）
+   - 这会触发"保存到 Obsidian"，而非通用剪藏操作
+
+### 第三步 — 授权 Obsidian 接收剪藏
+
+1. 首次剪藏时，扩展会提示授权保险库
+2. 选择你的 Obsidian 保险库
+3. 确认保存到 **Clippings** 文件夹（或你偏好的默认位置）
+
+### 第四步（可选）— 安装 Local Images Plus
+
+1. 打开 Obsidian → 设置 → 社区插件
+2. 搜索"Local Images Plus"
+3. 安装并启用
+4. 剪藏笔记中的远程图片将自动下载到 `Clippings/attachments/`
+
+---
+
+## 使用方法
+
+### 触发短语
+
+当消息包含网址**加上**以下触发词之一时，该 skill 会被激活：
 
 ```
-Your Vault/
+save/clip/保存/收藏 https://example.com
+https://example.com save/clip/保存/收藏
+```
+
+**工作原理：** OpenClaw 将你的消息与 `SKILL.md` 中的 `description` 字段进行匹配，自动调用此 skill。
+
+### 常见使用场景
+
+- 微信公众号
+- 任意网页
+
+---
+
+## 工作流程
+
+```
+用户发送网址 + 触发短语
+        ↓
+  OpenClaw 识别 skill
+        ↓
+  打开目标页面（Chrome，profile=openclaw）
+        ↓
+  等待页面完全加载
+        ↓
+  自动滚动页面（触发懒加载图片）
+        ↓
+  将 Chrome 切换到前台
+        ↓
+  按下 ⌥⇧O 快捷键
+        ↓
+  Obsidian Web Clipper 将 Markdown 保存到保险库
+        ↓
+  向用户返回确认
+```
+
+---
+
+## 保存位置
+
+剪藏的笔记会保存到保险库的 `Clippings/` 文件夹：
+
+```
+你的保险库/
 └── Clippings/
-    ├── your-article-title.md          ← Note content (Markdown)
-    └── attachments/                    ← Downloaded images
+    ├── your-article-title.md          ← 笔记内容（Markdown）
+    └── attachments/                    ← 下载的图片
         ├── image-001.png
         └── image-002.jpg
 ```
 
 ---
 
-## Known Limitations
+## 已知限制
 
-- **Chrome only** — Safari, Firefox, and other browsers are not supported
-- **Content quality depends on the source site** — some sites have anti-scraping measures or heavy JS rendering
-- **Shortcut conflicts** — if ⌥⇧O is claimed by another app (e.g., Alfred, Raycast), clipping will fail. Either change the shortcut or close the conflicting app
-- **WeChat articles** — WeChat public accounts have anti-crawler protections; images may not auto-download. Installing Local Images Plus is strongly recommended
-
----
-
-## Publishing (for skill authors)
-
-Just push `obsidian-clip-skill/` to a public GitHub repo. That's it — no registry, no login.
-
-Users install via:
-```bash
-npx --yes skills add your-username/your-repo
-```
-
----
-
-## Troubleshooting
-
-### Shortcut not responding
-
-1. Verify ⌥⇧O is correctly set in the Web Clipper extension settings
-2. Make sure Chrome is the active foreground window
-3. Check if another app (Alfred, Raycast, etc.) is intercepting the shortcut
-
-### Content is incomplete or missing
-
-1. Open the page manually in Chrome to verify it loads correctly
-2. Enable the Local Images Plus plugin
-3. Some sites require login to view full content — clipping will be limited in those cases
-
-### Clip doesn't trigger (OpenClaw doesn't respond)
-
-1. Confirm your message contains **both a URL and a trigger word** (e.g., "保存")
-2. Check that the skill folder is correctly placed at `~/.claude/skills/obsidian-clip-skill/`
-3. Restart the gateway: `openclaw gateway restart`
-4. Make sure Obsidian is running (background is fine)
-
-### Skill installed but not working
-
-1. Verify `SKILL.md` `description` field contains the trigger phrase you used
-2. Confirm the folder name matches the `name` field in `SKILL.md`
-3. Check OpenClaw logs for errors: `openclaw logs`
+- **仅支持 Chrome** — Safari、Firefox 和其他浏览器不支持
+- **内容质量取决于来源网站** — 有些网站有反爬措施或大量 JS 渲染
+- **快捷键冲突** — 如果 ⌥⇧O 被其他应用占用（如 Alfred、Raycast），剪藏会失败。请更换快捷键或关闭冲突应用
+- **微信文章** — 微信公众号有反爬保护，图片可能无法自动下载。强烈建议安装 Local Images Plus

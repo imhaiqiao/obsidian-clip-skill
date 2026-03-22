@@ -67,10 +67,10 @@ osascript -e '
 
 ### Step 5 — Confirm save
 
-Wait ~3 seconds, then check the note was created in the Obsidian Clippings vault folder. Extract the note title and image count, then reply:
+Wait 2 seconds, then check the note was created in the Obsidian Clippings vault folder. Extract the note title, then reply:
 
 ```
-✅ {note title}.md has been saved to your Obsidian vault, containing {N} images.
+✅ {note title}.md has been saved to your Obsidian.
 ```
 
 ## Notes
