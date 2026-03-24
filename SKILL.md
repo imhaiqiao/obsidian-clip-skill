@@ -2,7 +2,7 @@
 name: obsidian-clip-skill
 description: Clip any webpage to Obsidian using the Obsidian Web Clipper Chrome extension. Use when user provides a URL and wants to save it to Obsidian. Triggered by phrases like "clip to Obsidian", "save to Obsidian", "add to Obsidian", "收藏到 Obsidian", "clip this page", "save this article to Obsidian".
 author: Haiqiao Liu
-version: 1.0.0
+version: 1.1.0
 createdAt: 2026-03-23
 ---
 
@@ -12,45 +12,41 @@ Clip a webpage to Obsidian via the Obsidian Web Clipper Chrome extension.
 
 ## Workflow
 
-### Step 1 — Open URL
+### Execution Rules (Mandatory)
 
-```javascript
-browser.open(url, profile="openclaw")
+1. Execute steps strictly in order. Do not run steps in parallel.
+2. After Step 1, keep the returned `targetId` in `pageTargetId` and reuse it for all later browser actions.
+3. Do not trigger the clip shortcut before Step 3 finishes successfully.
+4. If any step fails, stop immediately and report the failure reason instead of continuing.
+
+### Step 1 — Open URL and capture `targetId`
+
+```text
+browser action=open url="<url>" profile=openclaw
 ```
 
-### Step 2 — Wait for `document.readyState === 'complete'`
+Save the returned `targetId` as `pageTargetId`.
+If `targetId` is missing, run:
 
-```javascript
-browser.act(targetId, {
-  fn: () => {
-    if (document.readyState !== 'complete') {
-      return new Promise(r => window.addEventListener('load', r, {once: true}));
-    }
-  }
-})
+```text
+browser action=list profile=openclaw
 ```
 
-### Step 3 — Scroll to bottom (trigger lazy-loaded images)
+Then pick the tab whose URL matches `<url>` and set its `targetId` to `pageTargetId`.
 
-```javascript
-browser.act(targetId, {
-  fn: () => {
-    const delay = ms => new Promise(r => setTimeout(r, ms));
-    const scrollStep = 800;
-    const scrollDelay = 500;
-    let totalHeight = 0;
-    const maxScroll = document.body.scrollHeight;
-    async function scrollPage() {
-      while (totalHeight < maxScroll) {
-        window.scrollBy(0, scrollStep);
-        totalHeight += scrollStep;
-        await delay(scrollDelay);
-      }
-      window.scrollTo(0, 0);
-    }
-    return scrollPage();
-  }
-})
+### Step 2 — Wait for the page to be ready
+
+```text
+browser action=act kind=wait loadState=domcontentloaded targetId=<pageTargetId> timeoutMs=30000 profile=openclaw
+browser action=act kind=wait loadState=networkidle targetId=<pageTargetId> timeoutMs=30000 profile=openclaw
+```
+
+### Step 3 — Scroll to bottom to trigger lazy-loaded images
+
+Use `evaluate` and scroll on `document.scrollingElement` (fallback to `documentElement` / `body`) so the action works on more websites.
+
+```text
+browser action=act kind=evaluate targetId=<pageTargetId> timeoutMs=90000 profile=openclaw fn="async () => { const sleep = (ms) => new Promise((r) => setTimeout(r, ms)); const root = document.scrollingElement || document.documentElement || document.body; if (!root) return; let sameBottomCount = 0; let lastTop = -1; for (let i = 0; i < 120; i++) { const maxTop = Math.max(0, root.scrollHeight - window.innerHeight); const nextTop = Math.min(maxTop, root.scrollTop + 900); root.scrollTop = nextTop; window.scrollTo(0, nextTop); await sleep(350); if (nextTop === lastTop && nextTop >= maxTop) { sameBottomCount += 1; if (sameBottomCount >= 3) break; } else { sameBottomCount = 0; } lastTop = nextTop; } window.scrollTo(0, 0); await sleep(200); }"
 ```
 
 ### Step 4 — Trigger clip shortcut
@@ -58,7 +54,7 @@ browser.act(targetId, {
 ```applescript
 osascript -e '
   tell application "Google Chrome" to activate
-  delay 0.5
+  delay 0.8
   tell application "System Events"
     keystroke "o" using {option down, shift down}
   end tell
@@ -67,11 +63,14 @@ osascript -e '
 
 ### Step 5 — Confirm save
 
-Wait 2 seconds, then check the note was created in the Obsidian Clippings vault folder. Extract the note title, then reply:
+Wait 2 seconds, then check whether a new note was created in the Obsidian `Clippings` folder after Step 4.
+If created, extract the note title, then reply:
 
 ```
 ✅ {note title}.md has been saved to your Obsidian.
 ```
+
+If not created, return a failure message with likely causes (shortcut conflict, extension not logged in, vault permission not granted).
 
 ## Notes
 
